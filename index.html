@@ -22,43 +22,105 @@
     <script type="text/babel">
         const appEl = document.querySelector('#app');
         const rootEl = ReactDOM.createRoot(appEl);
-        
-        function App(){
-            return(
-                <div>
-                    <AddTask/>
-                    <TaskList/>
-                </div>
-            );
-        }
+        function App() {
+        const [taskArr, setTaskArr] = React.useState([
+          {
+            id: 1,
+            title: "First Item",
+          },
+          {
+            id: 2,
+            title: "First Item",
+          },
+        ]);
 
-        function AddTask(){
-            const inputEl = React.useRef(null);
-            
+        const handleTaskUpdate = (value) => {
+          setTaskArr((prev) => {
+            return [...prev, value];
+          });
+        };
+
+        const handleTaskDelete = (id) => {
+          setTaskArr((prevState) => prevState.filter((obj) => obj.id !== id));
+        };
+
+        return (
+          <div>
+            <AddTask onSubmit={handleTaskUpdate} />
+            <TaskList data={taskArr} deleteTask={handleTaskDelete} />
+          </div>
+        );
+      }
+
+      function AddTask({ onSubmit }) {
+        const inputEl = React.useRef(null);
+
         // Activate when mounted
         React.useEffect(() => {
           inputEl.current.focus();
         }, []);
 
+        return (
+          <form
+            className="flex justify-center items-center flex-col"
+            onSubmit={(e) => {
+              e.preventDefault();
 
-            return(
-                <form className="flex flex-col items-center justify-center" onSubmit = {(e)=>{
-                    e.preventDefault();
-                    console.log(inputEl.current.value);
-                    inputEl.current.value = "";
-                }}>
-                    <input ref={inputEl} type="text" name="" id="" className="border rounded border-black"/>
+              if (!inputEl.current.value) return;
 
-                    <button type="submit" className="bg-blue-500 text-white py-2 rounded">
-                        Add Task
-                    </button>
-                </form>
-            )
-        }
+              onSubmit({
+                id: crypto.randomUUID(),
+                title: inputEl.current.value,
+              });
+              inputEl.current.value = "";
+            }}
+          >
+            <input
+              type="text"
+              name=""
+              id=""
+              ref={inputEl}
+              className="border rounded border-black"
+            />
+            <button
+              type="submit"
+              className="bg-blue-500 text-white p-2 rounded"
+            >
+              Add task
+            </button>
+          </form>
+        );
+      }
         
-    function TaskList() {}
- 
-    function SingleTask() {}
+    function TaskList({data, deleteTask}) {
+        console.log("from task list", data);
+        return (
+          <h1>
+            {data.map((obj) => (
+              <SingleTask
+                key={obj.id}
+                title={obj.title}
+                deleteTask={() => deleteTask(obj.id)}
+                id={obj.id}
+              />
+            ))}
+          </h1>
+        );
+      }
+
+    function SingleTask({title, deleteTask, id}) {
+        return (
+          <div>
+            <p className="text-blue-700">{title}</p>
+            <button
+              className="bg-blue-700 text-white rounded p-2"
+              onClick={deleteTask}
+            >
+              Delete
+            </button>
+          </div>
+        );
+      }
 
     rootEl.render(
     <React.StrictMode>
